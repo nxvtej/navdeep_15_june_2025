@@ -6,6 +6,8 @@ import uuid
 import os
 
 from app.database.db import get_db
+from app.database.db import engine, Base
+
 from app.database.models import Report
 from business.generate_report import generate_report_data_and_save_csv
 
@@ -23,6 +25,7 @@ async def trigger_report(background_tasks: BackgroundTasks, db: DBSession = Depe
     Triggers the generation of an uptime/downtime report as a background task.
     Returns a report_id to poll for status.
     """
+
     report_id = str(uuid.uuid4())
     
     new_report = Report(
@@ -33,7 +36,8 @@ async def trigger_report(background_tasks: BackgroundTasks, db: DBSession = Depe
     db.add(new_report)
     db.commit()
     db.refresh(new_report)
-
+    print(f"Report {report_id} created with status 'Pending'.")
+    
     background_tasks.add_task(generate_report_data_and_save_csv, report_id)
     return {"report_id": report_id, "status": "Queued", "message": "Report generation started in background."}
 

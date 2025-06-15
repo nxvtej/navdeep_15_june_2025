@@ -12,8 +12,8 @@ A backend service to monitor restaurant/store uptime/downtime, ingest large CSV 
 
 ## Stats
 
-- **Data Ingestion:** ~4 minutes (includes table creation + ingesting ~1.9M records)  
-- **Report Generation:** ~1 minute  
+- **Data Ingestion:** ~150 sec (includes table creation + ingesting ~1.9M records)  
+- **Report Generation:** ~40 sec  
 
 ---
 
@@ -35,6 +35,11 @@ A backend service to monitor restaurant/store uptime/downtime, ingest large CSV 
 ---
 
 ## Setup
+
+0. **Docker**
+   ```bash
+   docker run -p 8000:8000 nxvtej7/store-monitoring:latest #wait ~260sec to complete ingestion and run api-server 
+   ```
 
 1. **Clone repository**  
    ```bash
