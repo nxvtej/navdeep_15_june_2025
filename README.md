@@ -2,7 +2,7 @@
 
 A backend service to monitor restaurant/store uptime/downtime, ingest large CSV datasets (~1.9M records), and generate weekly uptime reports within a minute.
 
-Test using docker run -p 8000:8000 nxvtej7/store-monitoring:latest 
+Test using docker run -p 8000:8000   -v $(pwd)/reports:/app/data/reports   nxvtej7/store-monitoring:latest 
 
 ---
 
@@ -40,7 +40,7 @@ Test using docker run -p 8000:8000 nxvtej7/store-monitoring:latest
 
 0. **Docker**
    ```bash
-   docker run -p 8000:8000 nxvtej7/store-monitoring:latest #wait ~260sec to complete ingestion and run api-server 
+   docker run -p 8000:8000   -v $(pwd)/reports:/app/data/reports   nxvtej7/store-monitoring:latest #wait ~260sec to complete ingestion and run api-server 
    ```
 
 1. **Clone repository**  
