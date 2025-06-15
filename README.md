@@ -36,6 +36,38 @@ Test using docker run -p 8000:8000   -v $(pwd)/reports:/app/data/reports   nxvte
 
 ---
 
+## Endpoints
+
+### 1. `POST /trigger_report`
+- **Description:** Initiates report generation in the background.
+- **Input:** None
+- **Response:**
+  ```json
+  {
+    "report_id": "86e11526-1075-4134-89b6-3d99176c1d20",
+    "status": "Queued",
+    "message": "Report generation started in background."
+  }
+  ```
+### 2. `GET /get_report/{report_id}`
+- **Description:** Checks the status of the report or returns the generated CSV.
+- **Input:** report_id (UUID)
+- **Response:**
+   - If the report is still being generated:
+
+  ```json
+   {
+      "status": "Running",
+      "message": "Report is still being generated. Please try again later."
+   }
+  ```
+
+   - If the report is ready:
+      The CSV file is returned as a downloadable attachment
+
+
+---
+
 ## Setup
 
 0. **Docker**
@@ -99,3 +131,4 @@ Test using docker run -p 8000:8000   -v $(pwd)/reports:/app/data/reports   nxvte
     ```
 
 ---
+
