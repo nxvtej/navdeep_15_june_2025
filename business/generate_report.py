@@ -16,7 +16,7 @@ from app.database.models import Store, Store_Status, Menu_Hours, Timezone, Repor
 from business.config import (
     REPORTS_DIR,
     DEFAULT_TIMEZONE,
-    DEFAULT_MENU_HOURS
+    DEFAULT_MENU_HOURS as DEFAULT_BUSINESS_HOURS
 )
 
 
@@ -241,13 +241,11 @@ def _calculate_uptime_downtime_for_period(
         interval_start_utc = sorted_event_timestamps_utc[i]
         interval_end_utc = sorted_event_timestamps_utc[i+1]
 
-        # Skipping interval wchich is invalid or outside the main reporting period
         if interval_start_utc >= interval_end_utc or \
            interval_start_utc >= period_end_utc or \
            interval_end_utc <= period_start_utc:
             continue
         
-        # Clip interval to actual reporting period boundaries (redundant if previous check is robust, but safe)
         interval_start_utc = max(interval_start_utc, period_start_utc)
         interval_end_utc = min(interval_end_utc, period_end_utc)
 
@@ -260,7 +258,7 @@ def _calculate_uptime_downtime_for_period(
 
         current_status = _get_status_at_time(relevant_status_data, interval_start_utc)
 
-        # Check if this interval is within business hours (overlaps with any business hour interval)
+        # Check interval within business hour
         is_within_bh = False
         for bh_start, bh_end in utc_business_hours_intervals:
             overlap_start = max(interval_start_utc, bh_start)
@@ -268,14 +266,13 @@ def _calculate_uptime_downtime_for_period(
             
             if overlap_start < overlap_end: # Valid overlap found
                 is_within_bh = True
-                break # Found one, no need to check others for this interval
+                break
 
         if is_within_bh:
             if current_status == True:
                 uptime_minutes += duration_minutes
             elif current_status == False:
                 downtime_minutes += duration_minutes
-            # Note: If status is anything other than 'active' or 'inactive', it's ignored for uptime/downtime.
 
     return uptime_minutes, downtime_minutes
 

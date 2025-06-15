@@ -1,5 +1,3 @@
-# app/reporting/report_generator.py
-
 from datetime import datetime, timedelta, timezone, time
 import pandas as pd
 import pytz
@@ -8,8 +6,8 @@ from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import func
 import os
 from collections import defaultdict
-import bisect # Ensure bisect is imported
-import uuid # For generating unique report IDs
+import bisect
+import uuid
 
 # Import your database session and models
 from app.database.db import Session, engine

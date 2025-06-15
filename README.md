@@ -1,40 +1,94 @@
-some assumptions i made
+# Store Monitoring System V0
 
-Database Design :-
-    <!-- Earlier though of using status table id only as we are check stores status so we must be checking for all stores no
-     -->
-    1 Created a seperate table which only store store_id which is my master table for all stores
-        Reason - There is posiiblity that store_id might not exists on all csv files as like for business hour
-        if data is missing then its 24/7, and like if data is missing in timezone then its america/chicago
-    2 Created a id inside all tables which is just a incremental value just to uniquely identify the record, if not done this way then store_id and timestamp can serve this purpose but i prefered creating this
-    
+A backend service to monitor restaurant/store uptime/downtime, ingest large CSV datasets (~1.9M records), and generate weekly uptime reports within a minute.
 
-    ![alt text](image-1.png)
-    this is result for 36% done
-    can clearly see date conversion is causing too much time, need to find the work around
+---
 
+## Tech Stack
 
-    Updated timings:-
-        Earlier report generation use to take 28 mins, but now ~10.26 mins i.e 60% faster than older approach.(both results exclude ingestion to db time, and include time take for printing logs on console i.e input/ouput stream connected).
-    Results
-    ![alt text](image-2.png)
+**Python** · **FastAPI** · **Postgre** · **SQLAlchemy** · **Docker**
 
-    Why to change approach beacuse
-    we are doing minutes-by-minutes iterations
-        stores -        5,000
-        status -        18,00,000
-        menu_hours -    35,500
-        timezone -      5000
+---
 
-    so for every minutes for 1 week we get -> 60*24*7 = 10080
-    for single iteration -> timezone, convert_to_local, look_up menu_hours, look_up status
+## Stats
 
-    so for 1 loop = 5,000 + 35,500 + 18,00,000 = 18,40,500
-    for 10080     = 18,552,240,000
+- **Data Ingestion:** ~4 minutes (includes table creation + ingesting ~1.9M records)  
+- **Report Generation:** ~1 minute  
 
-    ~18 Billion iteratition, which includes convert_to_local time and db queries for fetching all records
+---
 
+## 🔗 Links
 
-    Saturday :- 
-    Optimized ingestion and algo, down to 3.50 min for ingestion and 1min for algo report
-    
+- [Output Report (Google Drive)](https://drive.google.com/file/d/1Rb67b9pZQrx79V8aJhybqTtJCoyWq1IG/view?pli=1)  
+- [Demo Video (Loom)](https://www.loom.com/share/32a0ce70a3c8463bb94ebc64fa770b41?sid=e0ad25a1-5842-4845-956e-4e95dd74eeb6)
+
+---
+
+## Future Work
+
+1. Offload report-generation logic from main API server to background workers (e.g., via AWS ECS + via messaging queues Redis/Kafka).
+2. Use **DuckDB** for faster analytical queries; supports lightweight local file-based operations. and remove need for external database
+3. Add a polling service to fetch status data automatically (removing dependency on manual CSV ingestion).
+4. Seperate db for storing reports, cost-effective storage (e.g., S3 buckets).
+5. Better logging using structured logger with file dumps for easier debugging.
+
+---
+
+## Setup
+
+1. **Clone repository**  
+   ```bash
+   git clone https://github.com/nxvtej/navdeep_15_june_2025.git
+   cd navdeep_15_june_2025
+   ```
+
+2. **Create a virtual environment**  
+   ```bash
+   python -m venv venv
+   source venv/bin/activate #linux
+   venv/Scripts/activate #windows
+   ```
+
+3. **Install dependencies**  
+   ```bash
+   pip install -r req.txt
+   ```
+
+4. **Start Postgre with Docker**  
+   ```bash
+   docker compose up -d
+   ```
+
+5. **Create a `.env` file** in the root directory  
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost:5432/store_monitoring_db
+   ```
+
+6. **Create a `data/` folder in the root directory** and place all CSV files inside it.
+
+7. **Run the data ingestion script** (uses 6 threads — close other intensive tasks)  
+   ```bash
+   python -m business.ingest_data
+   ```
+
+8. **Start API server**  
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+9. **Trigger a report generation**  
+   ```bash
+   curl --location --request POST 'http://127.0.0.1:8000/trigger_report'
+   ```
+
+10. **Check report status**  
+    ```bash
+    curl --location --globoff 'http://127.0.0.1:8000/get_report/{report_id}'
+    ```
+
+11. **Generated reports will be saved under:**  
+    ```
+    /data/reports
+    ```
+
+---
